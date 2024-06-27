@@ -75,64 +75,40 @@ Select TOP 1 ro.order_id, COUNT (co.customer_id) as pizzadeliverd
 */
 -- 2.1.7 For each customer, how many delivered pizzas had 
 -- at least 1 change and how many had no changes?
-
-SELECT co.customer_id, COUNT (co.customer_id) as Changedpizza, 
-            ro.cancellation, co.exclusions, co.extras
-      FROM customer_orders as co
-            JOIN runner_orders as ro ON co.order_id = ro.order_id
-      GROUP BY co.customer_id, ro.cancellation, co.exclusions, co.extras
-      HAVING ro.cancellation NOT IN (
-            '', 'Restaurant Cancellation', 'Customer Cancellation');
-
-
+/*
 -- with at least 1 change
 SELECT co.customer_id, COUNT (co.customer_id) as Changedpizza, 
             ro.cancellation, co.exclusions, co.extras
       FROM customer_orders as co
             JOIN runner_orders as ro ON co.order_id = ro.order_id
+      WHERE  ro.cancellation !='Customer Cancellation'
       GROUP BY co.customer_id, ro.cancellation, co.exclusions, co.extras
       HAVING (exclusions != '') AND (exclusions != 'null') OR
-            (extras !='') AND (extras != 'null') AND
-            (ro.cancellation !='Customer Cancellation') ;
+            (extras !='') AND (extras != 'null');
 
--- with no change
 SELECT co.customer_id, COUNT (co.customer_id) as Changedpizza, 
             ro.cancellation, co.exclusions, co.extras
       FROM customer_orders as co
             JOIN runner_orders as ro ON co.order_id = ro.order_id
+      WHERE  ro.cancellation NOT IN (
+            '', 'Restaurant Cancellation', 'Customer Cancellation')
       GROUP BY co.customer_id, ro.cancellation, co.exclusions, co.extras
-      HAVING (exclusions = '') AND (exclusions = 'null') OR
-            (extras ='') AND (extras = 'null') AND
-            (ro.cancellation !='Customer Cancellation') ;
- 
+      HAVING (exclusions != '') AND (exclusions != 'null') OR
+            (extras !='') AND (extras != 'null');
 
-SELECT co.customer_id, COUNT (co.pizza_id) as Changedpizza
+-- with no change
+
+
+SELECT co.customer_id, COUNT (co.customer_id) as Changedpizza,
+ co.pizza_id, exclusions, extras
       FROM customer_orders as co
             JOIN runner_orders as ro ON co.order_id = ro.order_id
-      GROUP BY co.customer_id, ro.cancellation, co.pizza_id, co.exclusions, co.extras
-      HAVING ro.cancellation IN ('', 'Null', 'null') AND co.exclusions IN ('','null') AND co.extras IN ('','null');
-
-SELECT co.customer_id, COUNT (co.pizza_id) as Changedpizza
-      FROM customer_orders as co
-            JOIN runner_orders as ro ON co.order_id = ro.order_id
-      GROUP BY co.customer_id, ro.cancellation, co.pizza_id, co.exclusions, co.extras
-      HAVING ro.cancellation IN ('', 'Null', 'null') AND co.exclusions >= 0 AND co.extras >= 0 ;
-
-SELECT co.customer_id, COUNT (co.pizza_id) as Changedpizza
-      FROM customer_orders as co
-            JOIN runner_orders as ro ON co.order_id = ro.order_id
-      GROUP BY co.customer_id, ro.cancellation, co.pizza_id, co.exclusions, co.extras
-      HAVING ro.cancellation IN ('', 'Null', 'null') AND co.exclusions >= 0 OR co.extras >= 0 ;
-
-
-SELECT *
-FROM
-(SELECT co.customer_id, ro.cancellation, co.pizza_id, co.exclusions, co.extras, COUNT (co.pizza_id) as Changedpizza
-      FROM customer_orders as co
-            JOIN runner_orders as ro ON co.order_id = ro.order_id
-      GROUP BY co.customer_id, ro.cancellation, co.pizza_id, co.exclusions, co.extras
-      HAVING ro.cancellation IN ('', 'Null', 'null')) as Ta;
-      
+      WHERE  ro.cancellation NOT IN (
+            '', 'Restaurant Cancellation', 'Customer Cancellation')
+      GROUP BY co.customer_id, co.pizza_id, ro.cancellation, co.exclusions, co.extras
+      HAVING exclusions IN ('null') AND
+            extras IN ('null');
+*/
 -- 2.1.8 How many pizzas were delivered that had both exclusions and extras?
 /*
 SELECT co.customer_id, COUNT (co.customer_id) as Changedpizza, 
@@ -185,13 +161,21 @@ GROUP BY order_time, pizza_id;
 
 -- WASTE
 
+/* --BASE
+SELECT *  FROM customer_orders as co
+            JOIN runner_orders as ro ON co.order_id = ro.order_id
+      ;
+Select *
+       FROM customer_orders
+
+-- 2.1.4
 Select co.pizza_id, COUNT (co.pizza_id) as pizzadeliverd
             FROM customer_orders as co
             JOIN runner_orders as ro ON co.order_id = ro.order_id
             GROUP BY co.pizza_id;          
 
       (Select *
-       FROM runner_orders
+       FROM runner_orders;
        WHERE cancellation IN ('','NULL', 'null')) as ro ON 
        
        ro.cancellation ; 
@@ -210,6 +194,29 @@ SELECT co.customer_id, COUNT (co.customer_id) as Changedpizza, ro.cancellation
       GROUP BY co.customer_id, ro.cancellation;
 
 
+-- 2.1.7 
+/*
+
+SELECT co.customer_id, COUNT (co.pizza_id) as Changedpizza
+      FROM customer_orders as co
+            JOIN runner_orders as ro ON co.order_id = ro.order_id
+      GROUP BY co.customer_id, ro.cancellation, co.pizza_id, co.exclusions, co.extras
+      HAVING ro.cancellation IN ('', 'Null', 'null') AND co.exclusions >= 0 AND co.extras >= 0 ;
+
+SELECT co.customer_id, COUNT (co.pizza_id) as Changedpizza
+      FROM customer_orders as co
+            JOIN runner_orders as ro ON co.order_id = ro.order_id
+      GROUP BY co.customer_id, ro.cancellation, co.pizza_id, co.exclusions, co.extras
+      HAVING ro.cancellation IN ('', 'Null', 'null') AND co.exclusions >= 0 OR co.extras >= 0 ;
+
+
+SELECT *
+FROM
+(SELECT co.customer_id, ro.cancellation, co.pizza_id, co.exclusions, co.extras, COUNT (co.pizza_id) as Changedpizza
+      FROM customer_orders as co
+            JOIN runner_orders as ro ON co.order_id = ro.order_id
+      GROUP BY co.customer_id, ro.cancellation, co.pizza_id, co.exclusions, co.extras
+      HAVING ro.cancellation IN ('', 'Null', 'null')) as Ta;
 
 SELECT co.customer_id, COUNT (co.customer_id) as Changedpizza, 
             ro.cancellation, co.exclusions, co.extras
@@ -225,13 +232,6 @@ SELECT co.customer_id, COUNT (co.customer_id) as Changedpizza,
       HAVING ro.cancellation NOT IN (
             '', 'Restaurant Cancellation', 'Customer Cancellation');
 
+*/
 
-SELECT co.customer_id, COUNT (co.customer_id) as Changedpizza, 
-            ro.cancellation, co.exclusions, co.extras
-      FROM customer_orders as co
-            JOIN runner_orders as ro ON co.order_id = ro.order_id
-      GROUP BY co.customer_id, ro.cancellation, co.exclusions, co.extras
-      HAVING ro.cancellation NOT IN (
-            '', 'Restaurant Cancellation', 'Customer Cancellation') AND
-            (exclusions != '') AND (exclusions != 'null') OR
-            (extras !='') AND (extras != 'null');
+
