@@ -104,24 +104,24 @@ GROUP BY del.order_id, runner_id, del.distance, del.duration;
 
 -- 2.1.7 What is the successful delivery percentage for each runner?
 /*
-SELECT sc.runner_id, sc.count, al.Total,  
-      CAST (sc.count as Float)/al.Total * 100 as Percentage
+SELECT sc.runner_id, sc.Success, al.Total,  
+      CAST (sc.Success as Float)/al.Total * 100 as Percentage
 FROM #Succ as sc
 JOIN  #All as al ON al.runner_id = sc.runner_id
-GROUP BY sc.runner_id, sc.count, al.Total ;
+GROUP BY sc.runner_id, sc.Success, al.Total ;
 
 
 DROP TABLE IF EXISTS  #Succ
-SELECT ad.runner_id, ad.cancellation, count
+SELECT ad.runner_id, ad.cancellation, Success
 INTO #Succ
 FROM
-            (SELECT runner_id, cancellation, COUNT(cancellation) as Count
+            (SELECT runner_id, cancellation, COUNT(cancellation) as Success
             FROM runner_orders
 
             GROUP BY runner_id, cancellation) as ad
 WHERE ad.cancellation NOT IN (
                   '', 'Restaurant Cancellation', 'Customer Cancellation')
-GROUP BY runner_id, cancellation, count;
+GROUP BY runner_id, cancellation, Success;
 
 DROP TABLE IF EXISTS  #All
 SELECT runner_id, COUNT(runner_id) as Total
